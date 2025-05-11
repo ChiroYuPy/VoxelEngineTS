@@ -9,7 +9,7 @@ export const RENDER_DIST: number    = 8;
 
 // generation settings
 export const CHUNK_HEIGHT_BOTTOM_LIMIT: number  = 0;
-export const CHUNK_HEIGHT_TOP_LIMIT: number     = 1;
+export const CHUNK_HEIGHT_TOP_LIMIT: number     = 4;
 export const CHUNK_HEIGHT_SCALE: number   = (CHUNK_HEIGHT_TOP_LIMIT - CHUNK_HEIGHT_BOTTOM_LIMIT) * CHUNK_SIZE;
 
 // player settings
