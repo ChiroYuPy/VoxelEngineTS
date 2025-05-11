@@ -1,7 +1,7 @@
-import {type BlockID, BlockIDs} from "../../BlockTypes.ts";
-import {ChunkGenerator} from "../ChunkGenerator.ts";
+import {type BlockID, BlockIDs} from "../data/BlockTypes.ts";
+import {WorldGenerator} from "../WorldGenerator.ts";
 
-export class FlatGenerator extends ChunkGenerator {
+export class FlatGenerator extends WorldGenerator {
     protected getBlockType(
         _lx: number, _ly: number, _lz: number,
         _gx: number, gy: number, _gz: number

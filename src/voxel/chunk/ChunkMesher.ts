@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { VOXEL_SIZE, CHUNK_SIZE } from "../../constants.ts";
 import { Chunk } from "./Chunk.ts";
-import {type BlockID, BlockIDs, getColor} from "../BlockTypes.ts";
+import {type BlockID, BlockIDs, getColor} from "../data/BlockTypes.ts";
 
 export class ChunkMesher {
     static buildMesh(chunk: Chunk, scene: THREE.Scene): THREE.Mesh[] {

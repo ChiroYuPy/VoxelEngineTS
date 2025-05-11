@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { CHUNK_SIZE } from "../../constants.ts";
 import { VoxelWorld } from "../VoxelWorld.ts";
 import { ChunkData } from "./ChunkData.ts";
-import { ChunkGenerator } from "./ChunkGenerator.ts";
+import { WorldGenerator } from "../WorldGenerator.ts";
 import { ChunkMesher } from "./ChunkMesher.ts";
 
 
@@ -12,7 +12,7 @@ export class Chunk {
     private readonly coordinate: THREE.Vector3;
     private world: VoxelWorld;
     private dirty: boolean;
-    private generator: ChunkGenerator;
+    private generator: WorldGenerator;
 
     public setDirty(): void {
         this.dirty = true;
@@ -22,7 +22,7 @@ export class Chunk {
         return this.dirty;
     }
 
-    constructor(coordinate: THREE.Vector3, generator: ChunkGenerator, world: VoxelWorld) {
+    constructor(coordinate: THREE.Vector3, generator: WorldGenerator, world: VoxelWorld) {
         this.coordinate = coordinate;
         this.generator = generator;
         this.world = world;

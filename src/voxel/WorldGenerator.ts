@@ -1,8 +1,8 @@
-import { CHUNK_SIZE } from "../../constants.ts";
-import type { BlockID } from "../BlockTypes.ts";
-import type { ChunkData } from "./ChunkData.ts";
+import { CHUNK_SIZE } from "../constants.ts";
+import type { BlockID } from "./data/BlockTypes.ts";
+import type { ChunkData } from "./chunk/ChunkData.ts";
 
-export abstract class ChunkGenerator {
+export abstract class WorldGenerator {
     constructor(_seed?: number) {}
 
     generate(chunkData: ChunkData, worldCoord: { x: number; y: number; z: number }): void {

@@ -1,9 +1,9 @@
 import {createNoise2D, createNoise3D, type NoiseFunction2D, type NoiseFunction3D} from "simplex-noise";
-import {CHUNK_HEIGHT_SCALE, CHUNK_SIZE} from "../../../constants.ts";
-import {type BlockID, BlockIDs} from "../../BlockTypes.ts";
-import {ChunkGenerator} from "../ChunkGenerator.ts";
+import {CHUNK_HEIGHT_SCALE, CHUNK_SIZE} from "../../constants.ts";
+import {type BlockID, BlockIDs} from "../data/BlockTypes.ts";
+import {WorldGenerator} from "../WorldGenerator.ts";
 
-export class NaturalGenerator extends ChunkGenerator {
+export class NaturalGenerator extends WorldGenerator {
     private readonly noise2D: NoiseFunction2D;
     private readonly noise3D: NoiseFunction3D;
     private readonly terrainScale = CHUNK_SIZE * 4;

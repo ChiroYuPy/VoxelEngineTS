@@ -2,13 +2,13 @@ import * as THREE from 'three';
 import { CHUNK_SIZE, RENDER_DIST, CHUNK_HEIGHT_BOTTOM_LIMIT, CHUNK_HEIGHT_TOP_LIMIT, VOXEL_SIZE } from '../constants.ts';
 import { Vector3 } from 'three';
 import { Chunk } from './chunk/Chunk.ts';
-import { ChunkGenerator } from './chunk/ChunkGenerator.ts';
-import {FlatGenerator} from "./chunk/generators/FlatGenerator.ts";
+import { WorldGenerator } from './WorldGenerator.ts';
+import {FlatGenerator} from "./generators/FlatGenerator.ts";
 
 export class VoxelWorld {
   private chunks: Map<string, Chunk> = new Map();
   private readonly scene: THREE.Scene;
-  private readonly generator: ChunkGenerator;
+  private readonly generator: WorldGenerator;
   private readonly seed: number;
   private usePlayerPosition: boolean;
 
