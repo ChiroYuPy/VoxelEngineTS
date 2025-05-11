@@ -1,0 +1,24 @@
+{
+  "name": "voxel_engine",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/noisejs": "^2.1.0",
+    "@types/three": "^0.176.0",
+    "typescript": "~5.8.3",
+    "vite": "^6.3.5"
+  },
+  "dependencies": {
+    "cannon": "^0.6.2",
+    "noisejs": "^2.1.0",
+    "simplex-noise": "^4.0.3",
+    "stats.js": "^0.17.0",
+    "three": "^0.176.0"
+  }
+}
