@@ -6,8 +6,8 @@ export class FlatGenerator extends WorldGenerator {
         _lx: number, _ly: number, _lz: number,
         _gx: number, gy: number, _gz: number
     ): BlockID {
-        if (gy === 16) return BlockIDs.GRASS;
-        if (gy < 16) return BlockIDs.DIRT;
+        if (gy === 4) return BlockIDs.GRASS;
+        if (gy < 4) return BlockIDs.DIRT;
         return BlockIDs.AIR;
     }
 }

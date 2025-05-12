@@ -1,221 +1,41 @@
 import * as THREE from 'three';
 import { VoxelWorld } from '../voxel/VoxelWorld.ts';
-import {CHUNK_HEIGHT_SCALE, CHUNK_SIZE, PLAYER_HEIGHT, PLAYER_SPEED, RENDER_DIST} from '../constants.ts';
+import {CHUNK_HEIGHT_SCALE, CHUNK_SIZE, PLAYER_HEIGHT, PLAYER_HITBOX_SIZE, RENDER_DIST} from '../constants.ts';
 import { InputHandler } from '../input/inputHandler.ts';
 import Stats from 'stats.js';
-import {Component, MAX_COMPONENTS} from "./ECS/core/Component.ts";
-import {Object3D} from "three";
-import {System} from "./ECS/core/System.ts";
-import type {ComponentManager} from "./ECS/core/ComponentManager.ts";
-import {ECS} from "./ECS/core/ECS.ts";
-import type {Signature} from "./ECS/core/Signature.ts";
-import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js';
-
-class blockerControls {
-    private controls: PointerLockControls;
-
-    constructor(camera: THREE.Camera, domElement: HTMLElement) {
-        const blocker = document.getElementById('blocker')!;
-        this.controls = new PointerLockControls(camera, domElement);
-        blocker.addEventListener('click', () => this.controls.lock());
-        this.controls.addEventListener('lock', () => blocker.style.display = 'none');
-        this.controls.addEventListener('unlock', () => blocker.style.display = 'flex');
-        camera.parent?.add(this.controls.object);
-    }
-
-    isLocked(): boolean {
-        return this.controls.isLocked;
-    }
-
-    getPosition(): THREE.Vector3 {
-        return this.controls.object.position;
-    }
-}
-
-
-class PositionComponent extends Component {
-    public x: number;
-    public y: number;
-    public z: number;
-    constructor(x: number, y: number, z: number) {
-        super();
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
-}
-
-class VelocityComponent extends Component {
-    public x: number;
-    public y: number;
-    public z: number;
-    constructor(x: number, y: number, z: number) {
-        super();
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
-}
-
-class BallColliderComponent extends Component {
-    public height: number;
-    public radius: number;
-    constructor(height: number, radius: number) {
-        super();
-        this.height = height;
-        this.radius = radius;
-    }
-}
-
-const CameraMode = {
-    THIRD_PERSON: "thirdPerson",
-    FIRST_PERSON: "firstPerson"
-};
-
-export type CameraMode = typeof CameraMode[keyof typeof CameraMode];
-
-class CameraComponent extends Component {
-    public camera: THREE.PerspectiveCamera;
-    public cameraMode: CameraMode;
-    constructor(camera: THREE.PerspectiveCamera, cameraMode: CameraMode) {
-        super();
-        this.camera = camera;
-        this.cameraMode = cameraMode;
-    }
-}
-
-class PlayerStateComponent extends Component {
-    public onGround: boolean;
-    public jumpHeight: number;
-    public moveSpeed: number;
-    constructor(onGround: boolean, jumpHeight: number, moveSpeed: number) {
-        super();
-        this.onGround = onGround;
-        this.jumpHeight = jumpHeight;
-        this.moveSpeed = moveSpeed;
-    }
-}
-
-class ThreeObject extends Component {
-    public object: Object3D;
-
-    constructor(object: THREE.Object3D) {
-        super();
-        this.object = object;
-    }
-}
-
-class InstanceIndex extends Component {
-    index: number;
-
-    constructor(index: number) {
-        super();
-        this.index = index;
-    }
-}
-
-class PlayerControlsComponent extends Component {
-    public controls: PointerLockControls;
-
-    constructor(camera: THREE.Camera, domElement: HTMLElement) {
-        super();
-        const blocker = document.getElementById('blocker')!;
-        this.controls = new PointerLockControls(camera, domElement);
-        blocker.addEventListener('click', () => this.controls.lock());
-        this.controls.addEventListener('lock', () => blocker.style.display = 'none');
-        this.controls.addEventListener('unlock', () => blocker.style.display = 'flex');
-        camera.parent?.add(this.controls.object);
-    }
-
-    isLocked(): boolean {
-        return this.controls.isLocked;
-    }
-
-    getPosition(): THREE.Vector3 {
-        return this.controls.object.position;
-    }
-}
-
-class PlayerControlSystem extends System {
-    update(cm: ComponentManager, input: InputHandler, deltaTime: number) {
-        for (const entity of this.entities) {
-            const playerControls = cm.getComponent(entity, PlayerControlsComponent);
-            const position = cm.getComponent(entity, PositionComponent);
-            const collider = cm.getComponent(entity, BallColliderComponent);
-
-            if (!playerControls || !position || !collider) continue;
-
-            const speed = PLAYER_SPEED * deltaTime;
-            const object = playerControls.controls.object;
-
-            const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(object.quaternion).setY(0).normalize();
-            const right = new THREE.Vector3().crossVectors(dir, object.up).normalize();
-
-            if (input.move.forward) object.position.addScaledVector(dir, speed);
-            if (input.move.back) object.position.addScaledVector(dir, -speed);
-            if (input.move.left) object.position.addScaledVector(right, -speed);
-            if (input.move.right) object.position.addScaledVector(right, speed);
-            if (input.move.jump) object.position.y += speed;
-            if (input.move.sneak) object.position.y -= speed;
-
-            // Gestion de la position en Y pour éviter de traverser le sol
-            const minY: number = 0;
-            if (object.position.y < minY + collider.height / 2) {
-                object.position.y = collider.height / 2;
-            }
-
-            // Mise à jour de la position de l'entité
-            position.x = object.position.x;
-            position.y = object.position.y;
-            position.z = object.position.z;
-        }
-    }
-}
-
-class RenderSystem extends System {
-    update(cm: ComponentManager) {
-        for (const entity of this.entities) {
-            const position = cm.getComponent(entity, PositionComponent);
-            const threeObj = cm.getComponent(entity, ThreeObject);
-            threeObj.object.position.set(position.x, position.y, 0);
-        }
-    }
-}
-
-class InstancedRenderSystem extends System {
-    update(cm: ComponentManager) {
-        let sharedMesh: THREE.InstancedMesh | null = null;
-
-        for (const entity of this.entities) {
-            const position = cm.getComponent(entity, PositionComponent);
-            const index = cm.getComponent(entity, InstanceIndex).index;
-            const mesh = cm.getComponent(entity, ThreeObject).object as THREE.InstancedMesh;
-
-            if (!sharedMesh) sharedMesh = mesh;
-
-            const dummy = new THREE.Object3D();
-            dummy.position.set(position.x, position.y, 0);
-            dummy.updateMatrix();
-            mesh.setMatrixAt(index, dummy.matrix);
-        }
-
-        if (sharedMesh) sharedMesh.instanceMatrix.needsUpdate = true;
-    }
-}
+import {MAX_COMPONENTS} from "./ECS/generic/Component.ts";
+import {ECS} from "./ECS/generic/ECS.ts";
+import type {Signature} from "./ECS/generic/Signature.ts";
+import {CPosition } from './ECS/components/CPosition.ts';
+import {CVelocity } from './ECS/components/CVelocity.ts';
+import {CBoxCollider} from "./ECS/components/CBoxCollider.ts";
+import {CCamera} from "./ECS/components/CCamera.ts";
+import {CPlayerState} from "./ECS/components/CPlayerState.ts";
+import {SMovements} from "./ECS/systems/SMovements.ts";
+import {SRender} from "./ECS/systems/SRender.ts";
+import {CThreeObject} from "./ECS/components/CThreeObject.ts";
+import {COrientation} from "./ECS/components/COrientation.ts";
+import type {Entity} from "./ECS/generic/Entity.ts";
+import {SPhysics} from "./ECS/systems/SPhysics.ts";
 
 export class Game {
     private readonly scene: THREE.Scene;
     private readonly camera: THREE.PerspectiveCamera;
     private renderer: THREE.WebGLRenderer;
-    private blockerControls: blockerControls;
     private readonly input: InputHandler;
-    private world: VoxelWorld;
+    private voxelWorld: VoxelWorld;
     private raycaster: THREE.Raycaster;
     private clock: THREE.Clock;
     private stats: Stats;
     private ecs: ECS;
-    private renderSystem: InstancedRenderSystem;
-    private playerControlSystem: PlayerControlSystem;
+
+    private renderSystem: SRender;
+    private playerControlsSystem: SMovements;
+    private physicsSystem: SPhysics;
+
+    private readonly playerEntity: Entity;
+
+    public locked: boolean = false;
 
     constructor() {
         this.scene = new THREE.Scene();
@@ -236,67 +56,99 @@ export class Game {
 
         this.initLights();
         this.initGrid();
-        this.world = new VoxelWorld(this.scene);
-        this.blockerControls = new blockerControls(this.camera, document.body);
+        this.voxelWorld = new VoxelWorld(this.scene);
         this.input = new InputHandler();
 
         // ECS begin //
 
         this.ecs = new ECS();
 
-        this.ecs.registerComponent(PositionComponent);
-        this.ecs.registerComponent(VelocityComponent);
-        this.ecs.registerComponent(CameraComponent);
-        this.ecs.registerComponent(PlayerStateComponent);
-        this.ecs.registerComponent(ThreeObject);
-        this.ecs.registerComponent(InstanceIndex);
-        this.ecs.registerComponent(PlayerControlsComponent);
-        this.ecs.registerComponent(BallColliderComponent);
+        this.ecs.registerComponent(CPosition);
+        this.ecs.registerComponent(COrientation);
+        this.ecs.registerComponent(CVelocity);
+        this.ecs.registerComponent(CCamera);
+        this.ecs.registerComponent(CPlayerState);
+        this.ecs.registerComponent(CThreeObject);
+        this.ecs.registerComponent(CBoxCollider);
 
-        this.renderSystem = this.ecs.registerSystem(InstancedRenderSystem);
+        this.renderSystem = this.ecs.registerSystem(SRender);
         const renderSystemSig: Signature = Array(MAX_COMPONENTS).fill(false);
-        renderSystemSig[this.ecs.getComponentManager().getComponentType(PositionComponent)] = true;
-        renderSystemSig[this.ecs.getComponentManager().getComponentType(ThreeObject)] = true;
-        renderSystemSig[this.ecs.getComponentManager().getComponentType(InstanceIndex)] = true;
-        this.ecs.setSystemSignature(InstancedRenderSystem, renderSystemSig);
+        renderSystemSig[this.ecs.getComponentManager().getComponentType(CPosition)] = true;
+        renderSystemSig[this.ecs.getComponentManager().getComponentType(CThreeObject)] = true;
+        this.ecs.setSystemSignature(SRender, renderSystemSig);
 
-        this.playerControlSystem = this.ecs.registerSystem(PlayerControlSystem, this.input);
+        this.playerControlsSystem = this.ecs.registerSystem(SMovements, this.input);
         const playerControlSystemSig: Signature = Array(MAX_COMPONENTS).fill(false);
-        playerControlSystemSig[this.ecs.getComponentManager().getComponentType(PlayerControlsComponent)] = true;
-        playerControlSystemSig[this.ecs.getComponentManager().getComponentType(PositionComponent)] = true;
-        this.ecs.setSystemSignature(PlayerControlSystem, playerControlSystemSig);
+        playerControlSystemSig[this.ecs.getComponentManager().getComponentType(CPosition)] = true;
+        playerControlSystemSig[this.ecs.getComponentManager().getComponentType(CVelocity)] = true;
+        playerControlSystemSig[this.ecs.getComponentManager().getComponentType(COrientation)] = true;
+        playerControlSystemSig[this.ecs.getComponentManager().getComponentType(CCamera)] = true;
+        playerControlSystemSig[this.ecs.getComponentManager().getComponentType(CPlayerState)] = true;
+        this.ecs.setSystemSignature(SMovements, playerControlSystemSig);
 
-        // Création du mesh instancié
+        this.physicsSystem = this.ecs.registerSystem(SPhysics);
+        const physicsSystemSig: Signature = Array(MAX_COMPONENTS).fill(false);
+        physicsSystemSig[this.ecs.getComponentManager().getComponentType(CPosition)] = true;
+        physicsSystemSig[this.ecs.getComponentManager().getComponentType(CVelocity)] = true;
+        physicsSystemSig[this.ecs.getComponentManager().getComponentType(CPlayerState)] = true;
+        physicsSystemSig[this.ecs.getComponentManager().getComponentType(CBoxCollider)] = true;
+        this.ecs.setSystemSignature(SPhysics, physicsSystemSig);
+
         const geometry = new THREE.BoxGeometry(1, 1, 1);
         const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-        const count = 32;
+        const count = 53;
         const instancedMesh = new THREE.InstancedMesh(geometry, material, count);
         this.scene.add(instancedMesh);
 
-        // Création de 32 entités ECS instanciées
         for (let i = 0; i < count; i++) {
-            const x = (i % 8) * 2;
-            const y = Math.floor(i / 8) * 2;
-            const z = 0;
+            const x = (i % 4) * 1.2;
+            const y = Math.floor(i / 4) % 4 * 1.2;
+            const z = Math.floor(i / 16) * 1.2;
 
             const entity = this.ecs.createEntity();
-            this.ecs.addComponent(entity, PositionComponent, new PositionComponent(x, y, z));
-            this.ecs.addComponent(entity, InstanceIndex, new InstanceIndex(i));
-            this.ecs.addComponent(entity, ThreeObject, new ThreeObject(instancedMesh));
+            this.ecs.addComponent(entity, CPosition, new CPosition(x, y, z));
+            this.ecs.addComponent(entity, CThreeObject, new CThreeObject(instancedMesh, i));
         }
 
-        // Créer l'entité du joueur
-        const playerEntity = this.ecs.createEntity();
+        this.playerEntity = this.ecs.createEntity();
 
-        // Ajouter le composant de position et de contrôles du joueur
-        this.ecs.addComponent(playerEntity, PositionComponent, new PositionComponent(0, CHUNK_HEIGHT_SCALE + PLAYER_HEIGHT, 0));
-        this.ecs.addComponent(playerEntity, PlayerControlsComponent, new PlayerControlsComponent(this.camera, document.body));
-        this.ecs.addComponent(playerEntity, BallColliderComponent, new BallColliderComponent(PLAYER_HEIGHT, 2));
+        this.ecs.addComponent(this.playerEntity, CPosition, new CPosition(0, CHUNK_HEIGHT_SCALE + PLAYER_HEIGHT, 0));
+        this.ecs.addComponent(this.playerEntity, CVelocity, new CVelocity(0, 0, 0));
+        this.ecs.addComponent(this.playerEntity, COrientation, new COrientation(0, 0));
+        this.ecs.addComponent(this.playerEntity, CPlayerState, new CPlayerState(false, false));
+        this.ecs.addComponent(this.playerEntity, CCamera, new CCamera(this.camera, "firstPerson"));
+        this.ecs.addComponent(this.playerEntity, CBoxCollider, new CBoxCollider(PLAYER_HITBOX_SIZE, PLAYER_HEIGHT, PLAYER_HITBOX_SIZE));
 
         // ECS end //
 
         this.initEvents();
         this.animate();
+
+        this.setupPointerLock();
+
+        const pos = this.ecs.getComponent(this.playerEntity, CPosition);
+        this.voxelWorld.updateChunks(new THREE.Vector3(pos.x, pos.y, pos.z));
+    }
+
+    private setupPointerLock() {
+        const blocker = document.getElementById('blocker')!;
+        const canvas = this.renderer.domElement;
+
+        blocker.addEventListener('click', () => {
+            canvas.requestPointerLock();
+        });
+
+        const onPointerLockChange = () => {
+            if (document.pointerLockElement === canvas) {
+                blocker.style.display = 'none';
+                this.locked = true;
+            } else {
+                blocker.style.display = 'flex';
+                this.locked = false;
+            }
+        };
+
+        document.addEventListener('pointerlockchange', onPointerLockChange, false);
     }
 
     private initLights() {
@@ -322,25 +174,25 @@ export class Game {
         });
 
         document.addEventListener('mousedown', (event) => {
-            if (!this.blockerControls.isLocked()) return;
+            if (!this.locked) return;
 
             this.raycaster.setFromCamera(new THREE.Vector2(0, 0), this.camera);
             const origin = this.raycaster.ray.origin.clone();
             const direction = this.raycaster.ray.direction.clone();
 
-            const hit = this.world.raycast(origin, direction);
+            const hit = this.voxelWorld.raycast(origin, direction);
             if (hit) {
                 const { position, normal } = hit;
                 if (event.button === 0) {
                     const placePos = position.clone().add(normal);
-                    this.world.setBlockAt(
+                    this.voxelWorld.setBlockAt(
                         Math.floor(placePos.x),
                         Math.floor(placePos.y),
                         Math.floor(placePos.z),
                         1
                     );
                 } else if (event.button === 2) {
-                    this.world.setBlockAt(position.x, position.y, position.z, 0);
+                    this.voxelWorld.setBlockAt(position.x, position.y, position.z, 0);
                 }
             }
         });
@@ -351,15 +203,23 @@ export class Game {
 
         this.stats.begin();
 
-        if (this.blockerControls.isLocked()) {
-            const dt = this.clock.getDelta();
-            this.world.updateChunks(this.blockerControls.getPosition());
-            this.playerControlSystem.update(this.ecs.getComponentManager(), this.input, dt);
+        const dt = this.clock.getDelta();
+
+        if (this.locked) {
+            this.playerControlsSystem.update(this.ecs.getComponentManager(), this.input, dt);
+
+            const pos = this.ecs.getComponent(this.playerEntity, CPosition);
+            this.voxelWorld.updateChunks(new THREE.Vector3(pos.x, pos.y, pos.z));
+
+            this.renderSystem.update(this.ecs.getComponentManager());
+
+            this.physicsSystem.update(this.ecs.getComponentManager(), this.voxelWorld, dt);
+
         }
 
-        this.renderSystem.update(this.ecs.getComponentManager());
-
         this.renderer.render(this.scene, this.camera);
+
+        this.input.update();
 
         this.stats.end();
     };

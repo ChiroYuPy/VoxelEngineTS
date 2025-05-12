@@ -4,6 +4,7 @@ import { Vector3 } from 'three';
 import { Chunk } from './chunk/Chunk.ts';
 import { WorldGenerator } from './WorldGenerator.ts';
 import {FlatGenerator} from "./generators/FlatGenerator.ts";
+import {NaturalGenerator} from "./generators/NaturalGenerator.ts";
 
 export class VoxelWorld {
   private chunks: Map<string, Chunk> = new Map();
@@ -12,17 +13,15 @@ export class VoxelWorld {
   private readonly seed: number;
   private usePlayerPosition: boolean;
 
-  private grid: THREE.Group;
-
   constructor(scene: THREE.Scene) {
     this.scene = scene;
     this.seed = 0;
-    this.generator = new FlatGenerator(this.seed);
+    this.generator = new NaturalGenerator(this.seed);
     this.usePlayerPosition = false;
 
-    this.grid = new THREE.Group();
-    this.scene.add(this.grid);
-    this.createGrid(new THREE.Vector3());
+    // this.grid = new THREE.Group();
+    // this.scene.add(this.grid);
+    // this.createGrid(new THREE.Vector3());
   }
 
   // === UTILITAIRES ===
@@ -87,6 +86,15 @@ export class VoxelWorld {
     }
   }
 
+  public isVoid(x: number, y: number, z: number): boolean {
+      const idx: number = this.getBlockAt(x, y, z);
+      return idx == 0;
+  }
+
+  public isSolid(x: number, y: number, z: number): boolean {
+      return !this.isVoid(x, y, z);
+  }
+
   // === CHUNKS ===
 
   private ensureChunkExists(cx: number, cy: number, cz: number): void {
@@ -129,8 +137,6 @@ export class VoxelWorld {
     const centerZ = this.usePlayerPosition
         ? Math.floor(playerPos.z / (CHUNK_SIZE * VOXEL_SIZE))
         : 0;  // Idem pour Z
-
-    this.updateGrid(playerPos);
 
     const needed = new Set<string>();
 
@@ -184,44 +190,5 @@ export class VoxelWorld {
         Math.abs(frac.y) === max ? Math.sign(frac.y) : 0,
         Math.abs(frac.z) === max ? Math.sign(frac.z) : 0,
     );
-  }
-
-  public updateGrid(playerPos: THREE.Vector3): void {
-    // Recréer la grille autour du joueur à chaque mise à jour
-    this.grid.clear(); // Efface les anciennes lignes
-    this.createGrid(playerPos);
-  }
-
-  private createGrid(playerPos: THREE.Vector3): void {
-    const gridSpacing = CHUNK_SIZE * VOXEL_SIZE; // Espacement entre les chunks
-    const radius = 3; // Rayon de 3 chunks autour du joueur
-
-    // Calculer les coordonnées des chunks autour du joueur dans un rayon de 3
-    const centerX = Math.floor(playerPos.x / gridSpacing);
-    const centerZ = Math.floor(playerPos.z / gridSpacing);
-
-    // Créer des lignes verticales autour du joueur
-    for (let dx = -radius; dx <= radius; dx++) {
-      for (let dz = -radius; dz <= radius; dz++) {
-        const x = (centerX + dx) * gridSpacing;
-        const z = (centerZ + dz) * gridSpacing;
-        this.addVerticalLineToGrid(x, z);
-      }
-    }
-  }
-
-  private addVerticalLineToGrid(x: number, z: number): void {
-    const yMin = 0; // Limite inférieure de la grille
-    const yMax = CHUNK_HEIGHT_TOP_LIMIT * CHUNK_SIZE * VOXEL_SIZE; // Limite supérieure
-
-    const material = new THREE.LineBasicMaterial({ color: 0xff0000, opacity: 0.5, transparent: true });
-    const geometry = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(x, yMin, z),  // Point de départ
-      new THREE.Vector3(x, yMax, z)   // Point d'arrivée
-    ]);
-    const line = new THREE.Line(geometry, material);
-
-    // Ajouter la ligne à la grille
-    this.grid.add(line);
   }
 }
