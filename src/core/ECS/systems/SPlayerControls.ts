@@ -1,7 +1,12 @@
 import {System} from "../generic/System.ts";
 import type {ComponentManager} from "../generic/ComponentManager.ts";
 import {InputHandler} from "../../../input/inputHandler.ts";
-import {JUMP_VELOCITY, MOUSE_SENSITIVITY, PLAYER_SPEED, PLAYER_SPRINT_SPEED} from "../../../constants.ts";
+import {
+    PLAYER_JUMP_STRENGTH,
+    MOUSE_SENSITIVITY,
+    PLAYER_SPEED,
+    PLAYER_SPRINT_SPEED, PLAYER_CAMERA_HEIGHT, PLAYER_CAMERA_SNEAK_HEIGHT,
+} from "../../../constants.ts";
 import * as THREE from "three";
 import {CPosition} from "../components/CPosition.ts";
 import {COrientation} from "../components/COrientation.ts";
@@ -13,7 +18,7 @@ export class SPlayerControls extends System {
     update(cm: ComponentManager, input: InputHandler, deltaTime: number) {
         for (const entity of this.entities) {
             const position: CPosition = cm.getComponent(entity, CPosition);
-            const velocity: CPosition = cm.getComponent(entity, CVelocity);
+            const velocity: CVelocity = cm.getComponent(entity, CVelocity);
             const orientation: COrientation = cm.getComponent(entity, COrientation);
             const camera: CCamera = cm.getComponent(entity, CCamera);
             const state: CEntityState = cm.getComponent(entity, CEntityState);
@@ -21,8 +26,9 @@ export class SPlayerControls extends System {
             if (!position || !orientation || !camera) continue;
 
             state.isSprint = input.move.sprint
+            state.isSneak = input.move.sneak;
 
-            const movement = state.isSprint ? PLAYER_SPRINT_SPEED * deltaTime : PLAYER_SPEED * deltaTime;
+            const speed = state.isSprint ? PLAYER_SPRINT_SPEED * deltaTime : PLAYER_SPEED * deltaTime;
 
             orientation.yaw -= input.mouse.deltaX * MOUSE_SENSITIVITY;
             orientation.pitch -= input.mouse.deltaY * MOUSE_SENSITIVITY;
@@ -47,15 +53,15 @@ export class SPlayerControls extends System {
             if (input.move.back) delta.addScaledVector(dir, -1);
             if (input.move.right) delta.add(right);
             if (input.move.left) delta.addScaledVector(right, -1);
-            if (input.move.jump && state.onGround) velocity.y += JUMP_VELOCITY;
+            if (input.move.jump && state.onGround) velocity.y += PLAYER_JUMP_STRENGTH;
 
-            delta.normalize().multiplyScalar(movement);
+            delta.normalize().multiplyScalar(speed);
 
             velocity.x += delta.x;
-            velocity.y += delta.y;
             velocity.z += delta.z;
 
-            const cameraPos = new THREE.Vector3(position.x, position.y + 1.6, position.z); // position des yeux
+            const cameraHeight = state.isSneak ? PLAYER_CAMERA_SNEAK_HEIGHT : PLAYER_CAMERA_HEIGHT;
+            const cameraPos = new THREE.Vector3(position.x, position.y + cameraHeight, position.z); // position des yeux
             const lookDir = new THREE.Vector3(
                 Math.cos(pitchRad) * Math.sin(yawRad),
                 Math.sin(pitchRad),

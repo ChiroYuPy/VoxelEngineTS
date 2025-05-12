@@ -101,9 +101,9 @@ export class Game {
         this.scene.add(instancedMesh);
 
         for (let i = 0; i < count; i++) {
-            const x = (i % 4) * 1.2;
-            const y = Math.floor(i / 4) % 4 * 1.2 + 48;
-            const z = Math.floor(i / 16) * 1.2;
+            const x = (i % 4) + 0.5;
+            const y = Math.floor(i / 4) % 4 + CHUNK_HEIGHT_SCALE;
+            const z = Math.floor(i / 16) + 0.5;
 
             const entity = this.ecs.createEntity();
             this.ecs.addComponent(entity, CPosition, new CPosition(x, y, z));
@@ -186,15 +186,10 @@ export class Game {
             const hit = this.voxelWorld.raycast(origin, direction);
             if (hit) {
                 const { position, normal } = hit;
-                if (event.button === 0) {
+                if (event.button === 2) {
                     const placePos = position.clone().add(normal);
-                    this.voxelWorld.setBlockAt(
-                        Math.floor(placePos.x),
-                        Math.floor(placePos.y),
-                        Math.floor(placePos.z),
-                        1
-                    );
-                } else if (event.button === 2) {
+                    this.voxelWorld.setBlockAt(Math.floor(placePos.x), Math.floor(placePos.y), Math.floor(placePos.z),1);
+                } else if (event.button === 0) {
                     this.voxelWorld.setBlockAt(position.x, position.y, position.z, 0);
                 }
             }
