@@ -36,7 +36,7 @@ export class NaturalGenerator extends WorldGenerator {
         if (gy < height && !isCave) {
             if (gy < height - 10) return BlockIDs.STONE;
             if (gy < height - 6) return BlockIDs.DIRT;
-            if (gy < height - 2) return BlockIDs.ICE;  // Ajout du gravier
+            if (gy < height - 2) return BlockIDs.GRAVEL;  // Ajout du gravier
             if (isForest && gy == height - 1) return BlockIDs.OAK_WOOD;  // Forêts avec des arbres
             return BlockIDs.GRASS;
         }

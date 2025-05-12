@@ -1,5 +1,3 @@
-import * as THREE from "three";
-
 export const BlockIDs = {
     AIR: 0,
     GRASS: 1,
@@ -27,177 +25,156 @@ export const BlockIDs = {
     ICE: 23,
     BRICK: 24,
     LEAVES: 25,
+    GRAVEL: 26,
 } as const;
 
 export type BlockID = typeof BlockIDs[keyof typeof BlockIDs];
 
 export type BlockData = {
     name: string;
-    texture: string | null;
+    textureId: number;
     solid: boolean;
-    color: THREE.Color | null;
 };
 
-export function getColor(id: BlockID): THREE.Color | null {
+export function getTextureId(id: BlockID): number {
     const blockData = BlockTypes[id];
-    return blockData ? blockData.color : null;
+    return blockData.textureId;
 }
 
 export const BlockTypes: { [key in BlockID]: BlockData } = {
     [BlockIDs.AIR]: {
         name: "Air",
-        texture: null,
+        textureId: -1,
         solid: false,
-        color: null,
     },
     [BlockIDs.GRASS]: {
         name: "Grass",
-        texture: "grass",
+        textureId: 0,
         solid: true,
-        color: new THREE.Color(0x00ff00),
     },
     [BlockIDs.DIRT]: {
         name: "Dirt",
-        texture: "dirt",
+        textureId: 1,
         solid: true,
-        color: new THREE.Color(0x8B4513),
     },
     [BlockIDs.STONE]: {
         name: "Stone",
-        texture: "stone",
+        textureId: 2,
         solid: true,
-        color: new THREE.Color(0xaaaaaa),
     },
     [BlockIDs.SAND]: {
         name: "Sand",
-        texture: "sand",
+        textureId: 3,
         solid: true,
-        color: new THREE.Color(0xFFFF66),
     },
     [BlockIDs.OAK_WOOD]: {
         name: "Oak Wood",
-        texture: "oak_wood",
+        textureId: 4,
         solid: true,
-        color: new THREE.Color(0xA0522D),
     },
     [BlockIDs.OAK_LEAVES]: {
         name: "Oak Leaves",
-        texture: "oak_leaves",
+        textureId: 5,
         solid: true,
-        color: new THREE.Color(0x228B22),
     },
     [BlockIDs.WATER]: {
         name: "Water",
-        texture: "water",
+        textureId: 6,
         solid: false,
-        color: new THREE.Color(0x00BFFF),
     },
     [BlockIDs.LAVA]: {
         name: "Lava",
-        texture: "lava",
+        textureId: 7,
         solid: false,
-        color: new THREE.Color(0xFF4500),
     },
     [BlockIDs.COAL_ORE]: {
         name: "Coal Ore",
-        texture: "coal_ore",
+        textureId: 8,
         solid: true,
-        color: new THREE.Color(0x1C1C1C),
     },
     [BlockIDs.IRON_ORE]: {
         name: "Iron Ore",
-        texture: "iron_ore",
+        textureId: 9,
         solid: true,
-        color: new THREE.Color(0xB0C4DE),
     },
     [BlockIDs.GOLD_ORE]: {
         name: "Gold Ore",
-        texture: "gold_ore",
+        textureId: 10,
         solid: true,
-        color: new THREE.Color(0xFFD700),
     },
     [BlockIDs.DIAMOND_ORE]: {
         name: "Diamond Ore",
-        texture: "diamond_ore",
+        textureId: 11,
         solid: true,
-        color: new THREE.Color(0x00FFFF),
     },
     [BlockIDs.LAPIS_ORE]: {
         name: "Lapis Ore",
-        texture: "lapis_ore",
+        textureId: 12,
         solid: true,
-        color: new THREE.Color(0x0000FF),
     },
     [BlockIDs.COPPER_ORE]: {
         name: "Copper Ore",
-        texture: "copper_ore",
+        textureId: 13,
         solid: true,
-        color: new THREE.Color(0xB87333),
     },
     [BlockIDs.SNOW]: {
         name: "Snow",
-        texture: "snow",
+        textureId: 14,
         solid: true,
-        color: new THREE.Color(0xFFFFFF),
     },
     [BlockIDs.FURNACE]: {
         name: "Furnace",
-        texture: "furnace",
+        textureId: 15,
         solid: true,
-        color: new THREE.Color(0x8B8B8B),
     },
     [BlockIDs.WOOD_PLANKS]: {
         name: "Wood Planks",
-        texture: "wood_planks",
+        textureId: 16,
         solid: true,
-        color: new THREE.Color(0xDEB887),
     },
     [BlockIDs.STONE_BRICKS]: {
         name: "Stone Bricks",
-        texture: "stone_bricks",
+        textureId: 17,
         solid: true,
-        color: new THREE.Color(0x8B8B8B),
     },
     [BlockIDs.TNT]: {
         name: "TNT",
-        texture: "tnt",
+        textureId: 18,
         solid: true,
-        color: new THREE.Color(0xFF0000),
     },
     [BlockIDs.FLOWER]: {
         name: "Flower",
-        texture: "flower",
+        textureId: 19,
         solid: true,
-        color: new THREE.Color(0xFF69B4),
     },
     [BlockIDs.BUSH]: {
         name: "Bush",
-        texture: "bush",
+        textureId: 20,
         solid: true,
-        color: new THREE.Color(0x228B22),
     },
     [BlockIDs.CACTUS]: {
         name: "Cactus",
-        texture: "cactus",
+        textureId: 21,
         solid: true,
-        color: new THREE.Color(0x32CD32),
     },
     [BlockIDs.ICE]: {
         name: "Ice",
-        texture: "ice",
+        textureId: 22,
         solid: true,
-        color: new THREE.Color(0xADD8E6),
     },
     [BlockIDs.BRICK]: {
         name: "Brick",
-        texture: "brick",
+        textureId: 23,
         solid: true,
-        color: new THREE.Color(0xB22222),
     },
     [BlockIDs.LEAVES]: {
         name: "Leaves",
-        texture: "leaves",
+        textureId: 24,
         solid: true,
-        color: new THREE.Color(0x228B22),
     },
+    [BlockIDs.GRAVEL]: {
+        name: "",
+        textureId: 4,
+        solid: false,
+    }
 };

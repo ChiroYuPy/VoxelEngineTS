@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { VOXEL_SIZE, CHUNK_SIZE } from "../../constants.ts";
 import { Chunk } from "./Chunk.ts";
-import { type BlockID, BlockIDs, getColor } from "../data/BlockTypes.ts";
+import {type BlockID, BlockIDs, getTextureId} from "../data/BlockTypes.ts";
 
 export class ChunkMesher {
     private textureAtlas: THREE.Texture;
@@ -31,11 +31,10 @@ export class ChunkMesher {
 
         const positions: number[] = [];
         const normals: number[] = [];
-        const colors: number[] = [];
         const indices: number[] = [];
         const uvs: number[] = [];
 
-        const textureSize = 128;
+        const textureSize = 4;
         const tileSize = 1 / textureSize;
 
         const faces = [
@@ -54,19 +53,18 @@ export class ChunkMesher {
                     const block = chunk.data.getVoxel(x, y, z);
                     if (block === BlockIDs.AIR) continue;
 
-                    const col = getColor(block as BlockID) ?? new THREE.Color(1, 1, 1);
-                    const r = col.r;
-                    const g = col.g;
-                    const b = col.b;
-
                     const gx = base.x + x * S;
                     const gy = base.y + y * S;
                     const gz = base.z + z * S;
 
-                    const tileX = block % textureSize;
-                    const tileY = Math.floor(block / textureSize);
+                    const textureId: number | null = getTextureId(block as BlockID);
+
+                    const tileX = textureId % textureSize;
+                    const tileY = Math.floor(textureId / textureSize);
+                    const invTileY = (textureSize - 1) - tileY;
+
                     const uMin = tileX * tileSize;
-                    const vMin = tileY * tileSize;
+                    const vMin = invTileY * tileSize;
                     const uMax = uMin + tileSize;
                     const vMax = vMin + tileSize;
 
@@ -78,10 +76,6 @@ export class ChunkMesher {
                         const verts = face.vertices(gx, gy, gz);
                         positions.push(...verts);
                         normals.push(...face.normal, ...face.normal, ...face.normal, ...face.normal);
-
-                        for (let i = 0; i < 4; i++) {
-                            colors.push(r, g, b);
-                        }
 
                         // UV dans l’ordre : bas-gauche, bas-droite, haut-droite, haut-gauche
                         uvs.push(
@@ -101,7 +95,6 @@ export class ChunkMesher {
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
         geometry.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
-        geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
         geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
         geometry.setIndex(indices);
 
@@ -112,11 +105,9 @@ export class ChunkMesher {
             vertexColors: true,
             vertexShader: `
                 varying vec2 vUv;
-                varying vec3 vColor;
                 varying vec3 vNormal;
                 void main() {
                     vUv = uv;
-                    vColor = color;
                     vNormal = normal;
                     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
                 }
@@ -124,13 +115,12 @@ export class ChunkMesher {
             fragmentShader: `
                 uniform sampler2D atlas;
                 varying vec2 vUv;
-                varying vec3 vColor;
                 varying vec3 vNormal;
                 void main() {
                     vec4 texColor = texture2D(atlas, vUv);
                     float light = dot(normalize(vNormal), vec3(0.4, 1.0, 0.5));
                     light = clamp(light, 0.2, 1.0);
-                    gl_FragColor = vec4(texColor.rgb * vColor * light, texColor.a);
+                    gl_FragColor = vec4(texColor.rgb * light, texColor.a);
                 }
             `,
         });
