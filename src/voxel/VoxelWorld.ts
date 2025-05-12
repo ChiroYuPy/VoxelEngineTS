@@ -3,7 +3,6 @@ import { CHUNK_SIZE, RENDER_DIST, CHUNK_HEIGHT_BOTTOM_LIMIT, CHUNK_HEIGHT_TOP_LI
 import { Vector3 } from 'three';
 import { Chunk } from './chunk/Chunk.ts';
 import { WorldGenerator } from './WorldGenerator.ts';
-import {FlatGenerator} from "./generators/FlatGenerator.ts";
 import {NaturalGenerator} from "./generators/NaturalGenerator.ts";
 
 export class VoxelWorld {
