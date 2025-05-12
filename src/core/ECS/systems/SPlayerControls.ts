@@ -9,7 +9,7 @@ import {CCamera} from "../components/CCamera.ts";
 import {CPlayerState} from "../components/CPlayerState.ts";
 import {CVelocity} from "../components/CVelocity.ts";
 
-export class SMovements extends System {
+export class SPlayerControls extends System {
     update(cm: ComponentManager, input: InputHandler, deltaTime: number) {
         for (const entity of this.entities) {
             const position: CPosition = cm.getComponent(entity, CPosition);

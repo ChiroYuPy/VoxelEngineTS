@@ -43,7 +43,7 @@ export function getColor(id: BlockID): THREE.Color | null {
     return blockData ? blockData.color : null;
 }
 
-export const BlockTypes: Record<BlockID, BlockData> = {
+export const BlockTypes: { [key in BlockID]: BlockData } = {
     [BlockIDs.AIR]: {
         name: "Air",
         texture: "empty.png",

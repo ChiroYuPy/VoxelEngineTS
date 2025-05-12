@@ -11,7 +11,7 @@ import {CVelocity } from './ECS/components/CVelocity.ts';
 import {CBoxCollider} from "./ECS/components/CBoxCollider.ts";
 import {CCamera} from "./ECS/components/CCamera.ts";
 import {CPlayerState} from "./ECS/components/CPlayerState.ts";
-import {SMovements} from "./ECS/systems/SMovements.ts";
+import {SPlayerControls} from "./ECS/systems/SPlayerControls.ts";
 import {SRender} from "./ECS/systems/SRender.ts";
 import {CThreeObject} from "./ECS/components/CThreeObject.ts";
 import {COrientation} from "./ECS/components/COrientation.ts";
@@ -30,7 +30,7 @@ export class Game {
     private ecs: ECS;
 
     private renderSystem: SRender;
-    private playerControlsSystem: SMovements;
+    private playerControlsSystem: SPlayerControls;
     private physicsSystem: SPhysics;
 
     private readonly playerEntity: Entity;
@@ -77,14 +77,14 @@ export class Game {
         renderSystemSig[this.ecs.getComponentManager().getComponentType(CThreeObject)] = true;
         this.ecs.setSystemSignature(SRender, renderSystemSig);
 
-        this.playerControlsSystem = this.ecs.registerSystem(SMovements, this.input);
+        this.playerControlsSystem = this.ecs.registerSystem(SPlayerControls, this.input);
         const playerControlSystemSig: Signature = Array(MAX_COMPONENTS).fill(false);
         playerControlSystemSig[this.ecs.getComponentManager().getComponentType(CPosition)] = true;
         playerControlSystemSig[this.ecs.getComponentManager().getComponentType(CVelocity)] = true;
         playerControlSystemSig[this.ecs.getComponentManager().getComponentType(COrientation)] = true;
         playerControlSystemSig[this.ecs.getComponentManager().getComponentType(CCamera)] = true;
         playerControlSystemSig[this.ecs.getComponentManager().getComponentType(CPlayerState)] = true;
-        this.ecs.setSystemSignature(SMovements, playerControlSystemSig);
+        this.ecs.setSystemSignature(SPlayerControls, playerControlSystemSig);
 
         this.physicsSystem = this.ecs.registerSystem(SPhysics);
         const physicsSystemSig: Signature = Array(MAX_COMPONENTS).fill(false);
@@ -102,12 +102,15 @@ export class Game {
 
         for (let i = 0; i < count; i++) {
             const x = (i % 4) * 1.2;
-            const y = Math.floor(i / 4) % 4 * 1.2;
+            const y = Math.floor(i / 4) % 4 * 1.2 + 48;
             const z = Math.floor(i / 16) * 1.2;
 
             const entity = this.ecs.createEntity();
             this.ecs.addComponent(entity, CPosition, new CPosition(x, y, z));
+            this.ecs.addComponent(entity, CVelocity, new CVelocity(0, 0, 0));
             this.ecs.addComponent(entity, CThreeObject, new CThreeObject(instancedMesh, i));
+            this.ecs.addComponent(entity, CBoxCollider, new CBoxCollider(1, 1, 1));
+            this.ecs.addComponent(entity, CPlayerState, new CPlayerState(false, false));
         }
 
         this.playerEntity = this.ecs.createEntity();

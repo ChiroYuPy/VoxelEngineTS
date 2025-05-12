@@ -9,26 +9,27 @@ import type { VoxelWorld } from "../../../voxel/VoxelWorld.ts";
 
 export class SPhysics extends System {
     update(cm: ComponentManager, world: VoxelWorld, deltaTime: number) {
+        let i = 0;
         for (const entity of this.entities) {
+            i++;
             const pos = cm.getComponent(entity, CPosition);
             const vel = cm.getComponent(entity, CVelocity);
             const state = cm.getComponent(entity, CPlayerState);
             const collider = cm.getComponent(entity, CBoxCollider);
 
-            // Appliquer gravité en l'air
             if (!state.onGround) {
                 vel.y -= GRAVITY * deltaTime;
             }
 
-            // Déplacement avec collisions
             this.moveWithCollision(pos, vel, collider, world, deltaTime, state);
 
-            // Résistance de l'air (en l'air)
             if (!state.onGround) {
                 vel.x *= AIR_RESISTANCE;
                 vel.z *= AIR_RESISTANCE;
             }
         }
+
+        console.log(i);
     }
 
     private moveWithCollision(
@@ -41,38 +42,26 @@ export class SPhysics extends System {
     ) {
         state.onGround = false;
 
-        // New combined movement step for all axes
-        const newPos = { ...pos };
 
-        newPos.x += vel.x * delta;
-        newPos.y += vel.y * delta;
-        newPos.z += vel.z * delta;
+        pos.x += vel.x * delta;
+        if (this.collides(pos, collider, world)) {
+            pos.x -= vel.x * delta;
+            vel.x = 0;
+        }
 
-        if (this.collides(newPos, collider, world)) {
-            // Handle X axis collision
-            if (vel.x !== 0) {
-                pos.x = newPos.x - vel.x * delta;
-                vel.x = 0;
+        pos.y += vel.y * delta;
+        if (this.collides(pos, collider, world)) {
+            pos.y -= vel.y * delta;
+            if (vel.y < 0) {
+                state.onGround = true;
+                vel.y = 0;
             }
+        }
 
-            // Handle Y axis collision
-            if (vel.y !== 0) {
-                pos.y = newPos.y - vel.y * delta;
-                if (vel.y < 0) {
-                    state.onGround = true;
-                    vel.y = 0;
-                }
-            }
-
-            // Handle Z axis collision
-            if (vel.z !== 0) {
-                pos.z = newPos.z - vel.z * delta;
-                vel.z = 0;
-            }
-        } else {
-            pos.x = newPos.x;
-            pos.y = newPos.y;
-            pos.z = newPos.z;
+        pos.z += vel.z * delta;
+        if (this.collides(pos, collider, world)) {
+            pos.z -= vel.z * delta;
+            vel.z = 0;
         }
     }
 
