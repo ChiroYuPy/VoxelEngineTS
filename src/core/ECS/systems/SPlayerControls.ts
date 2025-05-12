@@ -1,7 +1,7 @@
 import {System} from "../generic/System.ts";
 import type {ComponentManager} from "../generic/ComponentManager.ts";
 import {InputHandler} from "../../../input/inputHandler.ts";
-import {JUMP_VELOCITY, MOUSE_SENSITIVITY, PLAYER_SPEED} from "../../../constants.ts";
+import {JUMP_VELOCITY, MOUSE_SENSITIVITY, PLAYER_SPEED, PLAYER_SPRINT_SPEED} from "../../../constants.ts";
 import * as THREE from "three";
 import {CPosition} from "../components/CPosition.ts";
 import {COrientation} from "../components/COrientation.ts";
@@ -20,7 +20,9 @@ export class SPlayerControls extends System {
 
             if (!position || !orientation || !camera) continue;
 
-            const speed = PLAYER_SPEED * deltaTime;
+            state.isSprint = input.move.sprint
+
+            const movement = state.isSprint ? PLAYER_SPRINT_SPEED * deltaTime : PLAYER_SPEED * deltaTime;
 
             orientation.yaw -= input.mouse.deltaX * MOUSE_SENSITIVITY;
             orientation.pitch -= input.mouse.deltaY * MOUSE_SENSITIVITY;
@@ -47,7 +49,7 @@ export class SPlayerControls extends System {
             if (input.move.left) delta.addScaledVector(right, -1);
             if (input.move.jump && state.onGround) velocity.y += JUMP_VELOCITY;
 
-            delta.normalize().multiplyScalar(speed);
+            delta.normalize().multiplyScalar(movement);
 
             velocity.x += delta.x;
             velocity.y += delta.y;

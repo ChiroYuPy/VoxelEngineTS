@@ -6,6 +6,7 @@ export class InputHandler {
         right: false,
         jump: false,
         sneak: false,
+        sprint: false,
     };
     mouse = {
         left: false,
@@ -26,6 +27,8 @@ export class InputHandler {
             this.mouse.deltaX += e.movementX;
             this.mouse.deltaY += e.movementY;
         });
+
+        window.addEventListener('contextmenu', e => e.preventDefault());
     }
 
     private setMove(code: string, state: boolean) {
@@ -37,6 +40,8 @@ export class InputHandler {
             case 'Space': this.move.jump = state; break;
             case 'ShiftLeft':
             case 'ShiftRight': this.move.sneak = state; break;
+            case 'ControlLeft':
+            case 'ControlRight': this.move.sprint = state; break;
         }
     }
 

@@ -28,8 +28,6 @@ export class SPhysics extends System {
                 vel.z *= AIR_RESISTANCE;
             }
         }
-
-        console.log(i);
     }
 
     private moveWithCollision(

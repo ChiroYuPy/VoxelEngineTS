@@ -3,8 +3,6 @@ import { CHUNK_SIZE } from "../../constants.ts";
 import { VoxelWorld } from "../VoxelWorld.ts";
 import { ChunkData } from "./ChunkData.ts";
 import { WorldGenerator } from "../WorldGenerator.ts";
-import { ChunkMesher } from "./ChunkMesher.ts";
-
 
 export class Chunk {
     readonly data: ChunkData;
@@ -38,7 +36,7 @@ export class Chunk {
     buildMesh(scene: THREE.Scene): void {
         if (!this.dirty) return;
         this.meshes.forEach(m => scene.remove(m)); // clean
-        this.meshes = ChunkMesher.buildMesh(this, scene);
+        this.meshes = this.world.getChunkMesher().buildMesh(this, scene);
         this.meshes.forEach(m => scene.add(m));
         this.dirty = false;
     }

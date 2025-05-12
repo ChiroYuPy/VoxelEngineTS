@@ -1,17 +1,24 @@
 import * as THREE from "three";
 import { VOXEL_SIZE, CHUNK_SIZE } from "../../constants.ts";
 import { Chunk } from "./Chunk.ts";
-import {type BlockID, BlockIDs, getColor} from "../data/BlockTypes.ts";
+import { type BlockID, BlockIDs, getColor } from "../data/BlockTypes.ts";
 
 export class ChunkMesher {
-    static buildMesh(chunk: Chunk, scene: THREE.Scene): THREE.Mesh[] {
+    private textureAtlas: THREE.Texture;
+
+    constructor() {
+        this.textureAtlas = new THREE.TextureLoader().load('textures/atlas.png');
+        this.textureAtlas.magFilter = THREE.NearestFilter;
+        this.textureAtlas.minFilter = THREE.NearestFilter;
+    }
+
+    buildMesh(chunk: Chunk, scene: THREE.Scene): THREE.Mesh[] {
         const voxels = chunk.getVoxelData();
         if (!voxels) {
             console.warn("buildMesh called without voxel data.");
             return [];
         }
 
-        // Supprime les anciens meshes
         for (const mesh of chunk.meshes) {
             scene.remove(mesh);
             mesh.geometry.dispose();
@@ -26,6 +33,10 @@ export class ChunkMesher {
         const normals: number[] = [];
         const colors: number[] = [];
         const indices: number[] = [];
+        const uvs: number[] = [];
+
+        const textureSize = 128;
+        const tileSize = 1 / textureSize;
 
         const faces = [
             { normal: [0, 1, 0], offset: [0, 1, 0], vertices: (x: number, y: number, z: number) => [x, y + S, z, x + S, y + S, z, x + S, y + S, z + S, x, y + S, z + S], indices: [0, 2, 1, 0, 3, 2] },
@@ -44,30 +55,42 @@ export class ChunkMesher {
                     if (block === BlockIDs.AIR) continue;
 
                     const col = getColor(block as BlockID) ?? new THREE.Color(1, 1, 1);
-                    const r = (col as THREE.Color).r;
-                    const g = (col as THREE.Color).g;
-                    const b = (col as THREE.Color).b;
+                    const r = col.r;
+                    const g = col.g;
+                    const b = col.b;
 
                     const gx = base.x + x * S;
                     const gy = base.y + y * S;
                     const gz = base.z + z * S;
+
+                    const tileX = block % textureSize;
+                    const tileY = Math.floor(block / textureSize);
+                    const uMin = tileX * tileSize;
+                    const vMin = tileY * tileSize;
+                    const uMax = uMin + tileSize;
+                    const vMax = vMin + tileSize;
 
                     for (const face of faces) {
                         const [dx, dy, dz] = face.offset;
                         const neighbor = chunk.getBlockForMeshing(x + dx, y + dy, z + dz);
                         if (neighbor !== BlockIDs.AIR) continue;
 
-                        // vertices & normales
                         const verts = face.vertices(gx, gy, gz);
                         positions.push(...verts);
                         normals.push(...face.normal, ...face.normal, ...face.normal, ...face.normal);
 
-                        // couleur par sommet
                         for (let i = 0; i < 4; i++) {
                             colors.push(r, g, b);
                         }
 
-                        // indices
+                        // UV dans l’ordre : bas-gauche, bas-droite, haut-droite, haut-gauche
+                        uvs.push(
+                            uMin, vMax,
+                            uMax, vMax,
+                            uMax, vMin,
+                            uMin, vMin
+                        );
+
                         indices.push(...face.indices.map(i => i + vertexIndex));
                         vertexIndex += 4;
                     }
@@ -75,35 +98,41 @@ export class ChunkMesher {
             }
         }
 
-        // Construction du BufferGeometry
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
         geometry.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
         geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+        geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
         geometry.setIndex(indices);
 
-        // Shader qui applique la couleur par sommet
         const material = new THREE.ShaderMaterial({
+            uniforms: {
+                atlas: { value: this.textureAtlas }
+            },
             vertexColors: true,
             vertexShader: `
+                varying vec2 vUv;
                 varying vec3 vColor;
                 varying vec3 vNormal;
                 void main() {
+                    vUv = uv;
                     vColor = color;
                     vNormal = normal;
                     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
                 }
             `,
             fragmentShader: `
+                uniform sampler2D atlas;
+                varying vec2 vUv;
                 varying vec3 vColor;
                 varying vec3 vNormal;
                 void main() {
+                    vec4 texColor = texture2D(atlas, vUv);
                     float light = dot(normalize(vNormal), vec3(0.4, 1.0, 0.5));
                     light = clamp(light, 0.2, 1.0);
-                    gl_FragColor = vec4(vColor * light, 1.0);
+                    gl_FragColor = vec4(texColor.rgb * vColor * light, texColor.a);
                 }
             `,
-            transparent: true,
         });
 
         const mesh = new THREE.Mesh(geometry, material);

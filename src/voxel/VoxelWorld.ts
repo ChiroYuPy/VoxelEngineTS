@@ -3,19 +3,22 @@ import { CHUNK_SIZE, RENDER_DIST, CHUNK_HEIGHT_BOTTOM_LIMIT, CHUNK_HEIGHT_TOP_LI
 import { Vector3 } from 'three';
 import { Chunk } from './chunk/Chunk.ts';
 import { WorldGenerator } from './WorldGenerator.ts';
-import {NaturalGenerator} from "./generators/NaturalGenerator.ts";
+import { NaturalGenerator } from "./generators/NaturalGenerator.ts";
+import { ChunkMesher } from "./chunk/ChunkMesher.ts";
 
 export class VoxelWorld {
   private chunks: Map<string, Chunk> = new Map();
   private readonly scene: THREE.Scene;
   private readonly generator: WorldGenerator;
   private readonly seed: number;
+  private chunkMesher: ChunkMesher;
   private usePlayerPosition: boolean;
 
   constructor(scene: THREE.Scene) {
     this.scene = scene;
     this.seed = 0;
     this.generator = new NaturalGenerator(this.seed);
+    this.chunkMesher = new ChunkMesher();
     this.usePlayerPosition = false;
 
     // this.grid = new THREE.Group();
@@ -189,5 +192,9 @@ export class VoxelWorld {
         Math.abs(frac.y) === max ? Math.sign(frac.y) : 0,
         Math.abs(frac.z) === max ? Math.sign(frac.z) : 0,
     );
+  }
+
+  getChunkMesher(): ChunkMesher {
+    return this.chunkMesher;
   }
 }
