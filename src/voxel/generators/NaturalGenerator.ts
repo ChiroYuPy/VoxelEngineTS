@@ -37,7 +37,7 @@ export class NaturalGenerator extends WorldGenerator {
             if (gy < height - 10) return BlockIDs.STONE;
             if (gy < height - 6) return BlockIDs.DIRT;
             if (gy < height - 2) return BlockIDs.GRAVEL;  // Ajout du gravier
-            if (isForest && gy == height - 1) return BlockIDs.OAK_WOOD;  // Forêts avec des arbres
+            if (isForest && gy == height - 1) return BlockIDs.OAK_LOG;  // Forêts avec des arbres
             return BlockIDs.GRASS;
         }
         return BlockIDs.AIR;
@@ -55,7 +55,7 @@ export class NaturalGenerator extends WorldGenerator {
 
         for (let o = 0; o < 4; o++) {
             value += this.noise3D(x * frequency, y * frequency, z * frequency) * amplitude;
-            amplitude *= 0.5;
+            amplitude *= 0.1;
             frequency *= 2;
         }
 

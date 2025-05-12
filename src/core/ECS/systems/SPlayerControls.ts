@@ -6,7 +6,7 @@ import * as THREE from "three";
 import {CPosition} from "../components/CPosition.ts";
 import {COrientation} from "../components/COrientation.ts";
 import {CCamera} from "../components/CCamera.ts";
-import {CPlayerState} from "../components/CPlayerState.ts";
+import {CEntityState} from "../components/CEntityState.ts";
 import {CVelocity} from "../components/CVelocity.ts";
 
 export class SPlayerControls extends System {
@@ -16,7 +16,7 @@ export class SPlayerControls extends System {
             const velocity: CPosition = cm.getComponent(entity, CVelocity);
             const orientation: COrientation = cm.getComponent(entity, COrientation);
             const camera: CCamera = cm.getComponent(entity, CCamera);
-            const state: CPlayerState = cm.getComponent(entity, CPlayerState);
+            const state: CEntityState = cm.getComponent(entity, CEntityState);
 
             if (!position || !orientation || !camera) continue;
 

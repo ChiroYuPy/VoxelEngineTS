@@ -10,7 +10,7 @@ import {CPosition } from './ECS/components/CPosition.ts';
 import {CVelocity } from './ECS/components/CVelocity.ts';
 import {CBoxCollider} from "./ECS/components/CBoxCollider.ts";
 import {CCamera} from "./ECS/components/CCamera.ts";
-import {CPlayerState} from "./ECS/components/CPlayerState.ts";
+import {CEntityState} from "./ECS/components/CEntityState.ts";
 import {SPlayerControls} from "./ECS/systems/SPlayerControls.ts";
 import {SRender} from "./ECS/systems/SRender.ts";
 import {CThreeObject} from "./ECS/components/CThreeObject.ts";
@@ -67,7 +67,7 @@ export class Game {
         this.ecs.registerComponent(COrientation);
         this.ecs.registerComponent(CVelocity);
         this.ecs.registerComponent(CCamera);
-        this.ecs.registerComponent(CPlayerState);
+        this.ecs.registerComponent(CEntityState);
         this.ecs.registerComponent(CThreeObject);
         this.ecs.registerComponent(CBoxCollider);
 
@@ -83,14 +83,14 @@ export class Game {
         playerControlSystemSig[this.ecs.getComponentManager().getComponentType(CVelocity)] = true;
         playerControlSystemSig[this.ecs.getComponentManager().getComponentType(COrientation)] = true;
         playerControlSystemSig[this.ecs.getComponentManager().getComponentType(CCamera)] = true;
-        playerControlSystemSig[this.ecs.getComponentManager().getComponentType(CPlayerState)] = true;
+        playerControlSystemSig[this.ecs.getComponentManager().getComponentType(CEntityState)] = true;
         this.ecs.setSystemSignature(SPlayerControls, playerControlSystemSig);
 
         this.physicsSystem = this.ecs.registerSystem(SPhysics);
         const physicsSystemSig: Signature = Array(MAX_COMPONENTS).fill(false);
         physicsSystemSig[this.ecs.getComponentManager().getComponentType(CPosition)] = true;
         physicsSystemSig[this.ecs.getComponentManager().getComponentType(CVelocity)] = true;
-        physicsSystemSig[this.ecs.getComponentManager().getComponentType(CPlayerState)] = true;
+        physicsSystemSig[this.ecs.getComponentManager().getComponentType(CEntityState)] = true;
         physicsSystemSig[this.ecs.getComponentManager().getComponentType(CBoxCollider)] = true;
         this.ecs.setSystemSignature(SPhysics, physicsSystemSig);
 
@@ -107,18 +107,18 @@ export class Game {
 
             const entity = this.ecs.createEntity();
             this.ecs.addComponent(entity, CPosition, new CPosition(x, y, z));
-            this.ecs.addComponent(entity, CVelocity, new CVelocity(0, 0, 0));
+            this.ecs.addComponent(entity, CVelocity, new CVelocity());
             this.ecs.addComponent(entity, CThreeObject, new CThreeObject(instancedMesh, i));
             this.ecs.addComponent(entity, CBoxCollider, new CBoxCollider(1, 1, 1));
-            this.ecs.addComponent(entity, CPlayerState, new CPlayerState(false, false));
+            this.ecs.addComponent(entity, CEntityState, new CEntityState());
         }
 
         this.playerEntity = this.ecs.createEntity();
 
         this.ecs.addComponent(this.playerEntity, CPosition, new CPosition(0, CHUNK_HEIGHT_SCALE + PLAYER_HEIGHT, 0));
-        this.ecs.addComponent(this.playerEntity, CVelocity, new CVelocity(0, 0, 0));
+        this.ecs.addComponent(this.playerEntity, CVelocity, new CVelocity());
         this.ecs.addComponent(this.playerEntity, COrientation, new COrientation(0, 0));
-        this.ecs.addComponent(this.playerEntity, CPlayerState, new CPlayerState(false, false));
+        this.ecs.addComponent(this.playerEntity, CEntityState, new CEntityState());
         this.ecs.addComponent(this.playerEntity, CCamera, new CCamera(this.camera, "firstPerson"));
         this.ecs.addComponent(this.playerEntity, CBoxCollider, new CBoxCollider(PLAYER_HITBOX_SIZE, PLAYER_HEIGHT, PLAYER_HITBOX_SIZE));
 

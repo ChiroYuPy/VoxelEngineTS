@@ -4,7 +4,7 @@ export const BlockIDs = {
     DIRT: 2,
     STONE: 3,
     SAND: 4,
-    OAK_WOOD: 5,
+    OAK_LOG: 5,
     OAK_LEAVES: 6,
     WATER: 7,
     LAVA: 8,
@@ -67,7 +67,7 @@ export const BlockTypes: { [key in BlockID]: BlockData } = {
         textureId: 3,
         solid: true,
     },
-    [BlockIDs.OAK_WOOD]: {
+    [BlockIDs.OAK_LOG]: {
         name: "Oak Wood",
         textureId: 4,
         solid: true,

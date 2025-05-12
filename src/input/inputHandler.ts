@@ -40,8 +40,7 @@ export class InputHandler {
             case 'Space': this.move.jump = state; break;
             case 'ShiftLeft':
             case 'ShiftRight': this.move.sneak = state; break;
-            case 'ControlLeft':
-            case 'ControlRight': this.move.sprint = state; break;
+            case 'KeyR': this.move.sprint = state; break;
         }
     }
 

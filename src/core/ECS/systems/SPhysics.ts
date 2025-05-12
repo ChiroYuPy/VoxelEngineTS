@@ -2,7 +2,7 @@ import { System } from "../generic/System.ts";
 import type { ComponentManager } from "../generic/ComponentManager.ts";
 import { CPosition } from "../components/CPosition.ts";
 import { CVelocity } from "../components/CVelocity.ts";
-import { CPlayerState } from "../components/CPlayerState.ts";
+import { CEntityState } from "../components/CEntityState.ts";
 import { AIR_RESISTANCE, GRAVITY } from "../../../constants.ts";
 import { CBoxCollider } from "../components/CBoxCollider.ts";
 import type { VoxelWorld } from "../../../voxel/VoxelWorld.ts";
@@ -14,7 +14,7 @@ export class SPhysics extends System {
             i++;
             const pos = cm.getComponent(entity, CPosition);
             const vel = cm.getComponent(entity, CVelocity);
-            const state = cm.getComponent(entity, CPlayerState);
+            const state = cm.getComponent(entity, CEntityState);
             const collider = cm.getComponent(entity, CBoxCollider);
 
             if (!state.onGround) {
@@ -36,7 +36,7 @@ export class SPhysics extends System {
         collider: CBoxCollider,
         world: VoxelWorld,
         delta: number,
-        state: CPlayerState
+        state: CEntityState
     ) {
         state.onGround = false;
 
