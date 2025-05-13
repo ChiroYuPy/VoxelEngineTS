@@ -3,13 +3,42 @@ import { VOXEL_SIZE, CHUNK_SIZE } from "../../constants.ts";
 import { Chunk } from "./Chunk.ts";
 import {type BlockID, BlockIDs, getTextureId} from "../data/BlockTypes.ts";
 
+const chunkVertexShader = `
+varying vec2 vUv;
+varying vec3 vNormal;
+void main() {
+    vUv = uv;
+    vNormal = normal;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}`
+
+const chunkFragmentShader = `
+uniform sampler2D atlas;
+varying vec2 vUv;
+varying vec3 vNormal;
+void main() {
+    vec4 texColor = texture2D(atlas, vUv);
+    float light = dot(normalize(vNormal), vec3(0.3, 1.0, 0.5));
+    light = clamp(light, 0.2, 1.0);
+    gl_FragColor = vec4(texColor.rgb * light, texColor.a);
+}`
+
 export class ChunkMesher {
-    private textureAtlas: THREE.Texture;
+    private readonly textureAtlas: THREE.Texture;
+    private readonly material: THREE.ShaderMaterial;
 
     constructor() {
         this.textureAtlas = new THREE.TextureLoader().load('textures/atlas.png');
         this.textureAtlas.magFilter = THREE.NearestFilter;
         this.textureAtlas.minFilter = THREE.NearestFilter;
+        this.material = new THREE.ShaderMaterial({
+            uniforms: {
+                atlas: { value: this.textureAtlas }
+            },
+            vertexColors: true,
+            vertexShader: chunkVertexShader,
+            fragmentShader: chunkFragmentShader,
+        });
     }
 
     buildMesh(chunk: Chunk, scene: THREE.Scene): THREE.Mesh[] {
@@ -98,34 +127,7 @@ export class ChunkMesher {
         geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
         geometry.setIndex(indices);
 
-        const material = new THREE.ShaderMaterial({
-            uniforms: {
-                atlas: { value: this.textureAtlas }
-            },
-            vertexColors: true,
-            vertexShader: `
-                varying vec2 vUv;
-                varying vec3 vNormal;
-                void main() {
-                    vUv = uv;
-                    vNormal = normal;
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                }
-            `,
-            fragmentShader: `
-                uniform sampler2D atlas;
-                varying vec2 vUv;
-                varying vec3 vNormal;
-                void main() {
-                    vec4 texColor = texture2D(atlas, vUv);
-                    float light = dot(normalize(vNormal), vec3(0.4, 1.0, 0.5));
-                    light = clamp(light, 0.2, 1.0);
-                    gl_FragColor = vec4(texColor.rgb * light, texColor.a);
-                }
-            `,
-        });
-
-        const mesh = new THREE.Mesh(geometry, material);
+        const mesh = new THREE.Mesh(geometry, this.material);
         scene.add(mesh);
         chunk.meshes = [mesh];
         return [mesh];
