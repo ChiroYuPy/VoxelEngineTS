@@ -26,19 +26,6 @@ npm install
 npm run dev
 ```
 
-## 📁 Organisation du projet
-
-```
-src/
-├── core/            # Logique du moteur (Chunk, World, Voxel, etc.)
-├── utils/           # Math, couleurs, fonctions diverses
-├── data/            # Définitions de voxels, textures
-├── main.ts          # Point d’entrée principal
-public/
-├── index.html       # Page HTML de lancement
-├── assets/          # Ressources (shaders, images, etc.)
-```
-
 ## 🎮 Commandes clavier (par défaut)
 
 | Touche  | Action               |
