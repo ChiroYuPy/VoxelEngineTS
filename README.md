@@ -60,23 +60,22 @@ Modifie les constantes dans `src/constants.ts` pour ajuster :
 # 🗺️ Roadmap
 
 ### 🔰 1. Base minimale
-- Structure des voxels et chunks
-- Rendu WebGL avec gestion des faces visibles
-- Contrôle de la caméra
-- Pipeline moderne avec VBO/VAO
+- Structure des voxels et chunks ✅
+- Rendu THREE.js avec gestion des faces visibles ✅
+- Contrôle de la caméra ✅
 
 ### 🔄 2. Moteur dynamique
-- Reconstruction des chunks modifiés
-- Placement/destruction de blocs en temps réel
+- Reconstruction des chunks modifiés ✅
+- Placement/destruction de blocs en temps réel ✅
 - Système de sauvegarde/chargement
 
 ### 🎨 3. Esthétique et shaders
-- Couleurs dynamiques ou texture atlas
-- Shaders personnalisés
-- Éclairage statique basique
+- gestion textures: atlas ✅
+- Shaders de rendu ( au lieu d'un material simple ) ✅
+- Éclairage statique ✅
 
 ### 🌍 4. Monde étendu
-- Grille de chunks chargés/déchargés autour du joueur
+- Grille de chunks chargés/déchargés autour du joueur ✅
 - Optimisations : culling, niveau de détail (LOD)
 
 ### 🧰 5. Outils de développement
@@ -85,12 +84,12 @@ Modifie les constantes dans `src/constants.ts` pour ajuster :
 - Visualisation des normales ou wireframes
 
 ### 🌱 6. Génération procédurale
-- Génération de terrain avec bruit
+- Génération de terrain avec bruit ✅
 - Système de biomes
 - Structures naturelles (arbres, grottes…)
 
 ### 🕹️ 7. Simulation et gameplay
-- Gravité, collisions
+- Gravité, collisions ✅
 - Sélection et inventaire de blocs
 - Blocs interactifs (eau, feu, etc.)
 
@@ -103,11 +102,6 @@ Modifie les constantes dans `src/constants.ts` pour ajuster :
 - Tests unitaires
 - Documentation API
 - Démo publique hébergée
-
-### 🧩 10. Extensions futures
-- ECS pour les entités
-- Système de modding (blocs custom)
-- Support VR / AR
 
 ---
 
