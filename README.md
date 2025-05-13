@@ -20,8 +20,8 @@ Un moteur de rendu de voxels en **TypeScript**, conçu pour être **performant**
 ## 🚀 Installation rapide
 
 ```bash
-git clone https://github.com/chiroyupy/voxel-engine-ts.git
-cd voxel-engine-ts
+git clone git@github.com:ChiroYuPy/VoxelEngineTS.git
+cd VoxelEngineTS
 npm install
 npm run dev
 ```
