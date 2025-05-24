@@ -4,7 +4,7 @@ import { Vector3 } from 'three';
 import { Chunk } from './chunk/Chunk.ts';
 import { WorldGenerator } from './WorldGenerator.ts';
 import { ChunkMesher } from "./chunk/ChunkMesher.ts";
-import {FlatGenerator} from "./generators/FlatGenerator.ts";
+import {NaturalGenerator} from "./generators/NaturalGenerator.ts";
 
 export class VoxelWorld {
   private chunks: Map<string, Chunk> = new Map();
@@ -17,7 +17,7 @@ export class VoxelWorld {
   constructor(scene: THREE.Scene) {
     this.scene = scene;
     this.seed = 0;
-    this.generator = new FlatGenerator(this.seed);
+    this.generator = new NaturalGenerator(this.seed);
     this.chunkMesher = new ChunkMesher();
     this.usePlayerPosition = false;
 

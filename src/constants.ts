@@ -7,7 +7,7 @@ export const CHUNK_VOLUME: number   = CHUNK_AREA * CHUNK_SIZE;
 // chunk generation settings
 export const RENDER_DIST: number    = 8;
 export const CHUNK_HEIGHT_BOTTOM_LIMIT: number  = 0;
-export const CHUNK_HEIGHT_TOP_LIMIT: number     = 1;
+export const CHUNK_HEIGHT_TOP_LIMIT: number     = 3;
 export const CHUNK_HEIGHT_SCALE: number   = (CHUNK_HEIGHT_TOP_LIMIT - CHUNK_HEIGHT_BOTTOM_LIMIT + 1) * CHUNK_SIZE;
 
 // player settings
